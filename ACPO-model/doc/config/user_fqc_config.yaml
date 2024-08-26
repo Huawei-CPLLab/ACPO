@@ -1,0 +1,62 @@
+data:
+  file_name: raw_data_2
+  path: ./data/
+  processed_file: data_v2
+  save_file: true
+drop_feature:
+  keys:
+    - IsSuitableForJumpTables
+    - LowCaseValue
+    - HighCaseValue
+    - SwitchNumCases
+    - TotalClusterNumCases
+    - MaxSingleClusterRange
+feature_to_class:
+  cat: {}
+  keys:
+    - MinJumpTableEntries
+  path: ''
+features_relation:
+  ascending: false
+  correlation: true
+  key:
+    - MinJumpTableEntries
+  sort: false
+  threshold: 0.03
+index:
+  x_col_end: -7
+  x_col_start: 3
+  y_col: -1
+prune_data:
+  key: Benchmark
+  logic: AND
+  queries:
+    - speedup < 1.0
+  values:
+    - consumer_jpeg_c
+    - automotive_susan_e
+    - consumer_lame
+    - automotive_susan_c
+    - consumer_jpeg_d
+    - telecom_gsm
+    - security_rijndael_d
+    - clomp
+    - pennant
+    - automotive_susan_s
+    - security_blowfish_d
+    - security_blowfish_e
+    - security_pgp_d
+    - security_pgp_e
+    - security_rijndael_e
+remove_constant_feature:
+  debug: false
+remove_duplicates:
+  ascending: true
+  keep: last
+  keys:
+    - Benchmark
+    - ModuleName
+    - FunctionName
+    - BasicBlockName
+  order_key: ''
+root_path: ''

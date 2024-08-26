@@ -1,0 +1,114 @@
+{
+    "root_path": "../sample_model",
+    "work_path": "./work/",
+    "log_path": "./log/",
+    "data": {
+        "path": "./data/v3/",
+        "file_name": "raw_data_2",
+        "processed_file": "data_v2",
+        "save_file": true
+    },
+    "model": {
+        "name": "standalone16_v3.0.5",
+        "path": "lu.pb/",
+        "sc_file": "sc.pkl",
+        "cat_file": "cats.pkl"
+    },
+    "unique_key": [
+        "Benchmark",
+        "ModuleName",
+        "FunctionName",
+        "BasicBlockName"
+    ],
+    "remove_duplicates": {
+        "keys": [
+            "Benchmark",
+            "ModuleName",
+            "FunctionName",
+            "BasicBlockName"
+        ],
+        "order_key": "",
+        "ascending": true,
+        "keep": "last"
+    },
+    "prune_data": {
+        "key": "Benchmark",
+        "values": [
+            "consumer_jpeg_c",
+            "automotive_susan_e",
+            "consumer_lame",
+            "automotive_susan_c",
+            "consumer_jpeg_d",
+            "telecom_gsm",
+            "security_rijndael_d",
+            "clomp",
+            "pennant",
+            "automotive_susan_s",
+            "security_blowfish_d",
+            "security_blowfish_e",
+            "security_pgp_d",
+            "security_pgp_e",
+            "security_rijndael_e"
+        ],
+        "queries": [
+            "speedup < 1.0"
+        ],
+        "logic": "AND"
+    },
+    "drop_feature": {
+        "keys": [
+            "IsSuitableForJumpTables",
+            "LowCaseValue",
+            "HighCaseValue",
+            "SwitchNumCases",
+            "TotalClusterNumCases",
+            "MaxSingleClusterRange"
+        ]
+    },
+    "remove_constant_feature": {
+        "debug": false
+    },
+    "feature_to_class": {
+        "keys": [
+            "MinJumpTableEntries"
+        ],
+        "cat": {},
+        "path": ""
+    },
+    "features_relation": {
+        "key": [
+            "MinJumpTableEntries"
+        ],
+        "correlation": true,
+        "sort": false,
+        "ascending": false,
+        "threshold": 0.03
+    },
+    "index": {
+        "x_col_start": 3,
+        "x_col_end": -7,
+        "y_col": -1
+    },
+    "test": {
+        "path": "./work/test/",
+        "file_name": "test_data"
+    },
+    "class_key": [
+        "MinJumpTableEntries"
+    ],
+    "uncorrelated_features": [],
+    "header": [
+        "benchmark",
+        "",
+        "",
+        "",
+        "prediction",
+        "actual"
+    ],
+    "id": [
+        -4,
+        0,
+        1,
+        2
+    ]
+}

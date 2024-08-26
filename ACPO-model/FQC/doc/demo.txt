@@ -1,0 +1,213 @@
+By removing 3436 duplicates, from 4632, we get 1196 data points.
+There is not any row found to satisfies the query.
+The number of rows which contains null value(s) is: 1
+By removing null data, data points reduced from 1196, to 1195.
+By dropping 6 features, from 33, we keep 27 features.
+The number of features that do not change in value is 0.
+The number of possible classes: 6
+The unique number of classes: 6
+MinJumpTableEntries -> category mapping is: 
+{16: 4, 4: 2, 0: 0, 8: 3, 2: 1, 32: 5}
+Head count and percentage of classes are:
+         count       %
+Classes               
+0           86   7.197
+1           68   5.690
+2          792  66.276
+3           87   7.280
+4           90   7.531
+5           72   6.025
+   ModuleName         FunctionName BasicBlockName  ...  runtime   speedup  Classes
+0     parse.c     id3_parse_latin1       for.cond  ...   5.6374  1.010998        2
+1      sbcp.c      s_xBCPD_process   if.then15.us  ...   5.3014  1.008809        2
+2     bzip2.c           uncompress   errhandler.i  ...   5.2407  1.070086        2
+3   gschar0.c  gs_type0_next_glyph       sw.bb358  ...   5.3014  1.008809        2
+4  iscanbin.c    scan_bos_continue         if.end  ...   5.3014  1.008809        4
+
+[5 rows x 28 columns]
+       MaxSingleClusterNumCases  NumClusters  ...      speedup      Classes
+count               1195.000000  1195.000000  ...  1195.000000  1195.000000
+mean                   1.230962     3.679498  ...     1.025553     2.203347
+std                    1.256226     4.978029  ...     0.027084     1.104880
+min                    1.000000     1.000000  ...     1.008809     0.000000
+25%                    1.000000     2.000000  ...     1.008809     2.000000
+50%                    1.000000     2.000000  ...     1.008809     2.000000
+75%                    1.000000     4.000000  ...     1.047990     2.000000
+max                   32.000000    69.000000  ...     1.100696     5.000000
+
+[8 rows x 24 columns]
+for the dataset with rows, columns of (1195, 28)
+                           Classes |P.Coef|>3.0%
+MaxSingleClusterNumCases  0.004753          Weak
+NumClusters              -0.000932          Weak
+Range                     0.023503          Weak
+MaxCaseValueDistance      0.112880          Good
+AvgCaseValueDistance     -0.010998          Weak
+AvgInstCount              0.019400          Weak
+AvgLoadInstCount          0.005150          Weak
+AvgStoreInstCount         0.036650          Good
+BBInstCount              -0.064749          Good
+BBLoadInstCount          -0.068785          Good
+BBStoreInstCount         -0.036680          Good
+BBCallInstCount           0.027624          Weak
+BBHasHotEdge              0.043832          Good
+HasSwitchInSuccessors    -0.039062          Good
+NumSuccessorsWithSwitch  -0.036248          Good
+TopCaseSuccessorProb      0.000357          Weak
+TopClusterSuccessorProb  -0.024377          Weak
+TopBlockSuccessorProb     0.020987          Weak
+FinalNumClusters          0.328801          Good
+ShouldBuildJumpTable     -0.452584          Good
+MinJumpTableEntries       0.901083          Good
+runtime                  -0.045535          Good
+speedup                  -0.038851          Good
+Classes                   1.000000          Good
+
+ On a preliminary trained model:
+	 Test accuracy 68.33%
+	 Train accuracy 93.21%
+
+confusion matrix on training data: 
+ [[ 67   0   3   3   1   3]
+ [  2  53   2   2   0   2]
+ [  3   0 704   1   2   3]
+ [  5   1   5  64   2   1]
+ [  4   2   5   5  62   3]
+ [  4   1   4   3   1  52]] 
+
+confusion matrix on test data: 
+ [[ 2  1  6  0  0  0]
+ [ 2  0  5  0  0  0]
+ [ 2  0 76  0  1  0]
+ [ 2  1  3  2  0  1]
+ [ 0  2  2  1  2  2]
+ [ 2  0  3  0  2  0]] 
+
+Horizontal axis shows predicted labels, vertical axis depicts true labels. 
+
+Prediction summary: 
+   correct      incorrect     
+    train test     train test
+0      67    2        10    7
+1      53    0         8    7
+2     704   76         9    3
+3      64    2        14    7
+4      62    2        19    7
+5      52    0        13    7 
+
+Prediction distribution: 
+   correct %        incorrect %       
+      train   test       train   test
+0     0.062  0.017       0.009  0.058
+1     0.049  0.000       0.007  0.058
+2     0.655  0.633       0.008  0.025
+3     0.060  0.017       0.013  0.058
+4     0.058  0.017       0.018  0.058
+5     0.048  0.000       0.012  0.058 
+
+Classification report on train data: 
+               precision    recall  f1-score   support
+
+           0       0.79      0.87      0.83        77
+           1       0.93      0.87      0.90        61
+           2       0.97      0.99      0.98       713
+           3       0.82      0.82      0.82        78
+           4       0.91      0.77      0.83        81
+           5       0.81      0.80      0.81        65
+
+    accuracy                           0.93      1075
+   macro avg       0.87      0.85      0.86      1075
+weighted avg       0.93      0.93      0.93      1075
+ 
+
+Classification report on test data: 
+               precision    recall  f1-score   support
+
+           0       0.20      0.22      0.21         9
+           1       0.00      0.00      0.00         7
+           2       0.80      0.96      0.87        79
+           3       0.67      0.22      0.33         9
+           4       0.40      0.22      0.29         9
+           5       0.00      0.00      0.00         7
+
+    accuracy                           0.68       120
+   macro avg       0.34      0.27      0.28       120
+weighted avg       0.62      0.68      0.64       120
+ 
+
+
+Definitions:
+* 'Precision' is the number of correctly-identified members of a class divided by all the times the model predicted that class.
+   In the case of Cat/Dog, the precision score would be the number of correctly-identified Cat divided by the total number of times the classifier predicted “Cat,” rightly or wrongly.
+
+* 'Recall' is the number of members of a class that the classifier identified correctly divided by the total number of members in that class.
+   For Cat, this would be the number of actual Cats that the classifier correctly identified as such."
+
+* 'F1 score' is a little less intuitive because it combines precision and recall into one metric.
+   If precision and recall are both high, F1 will be high, too. If they are both low, F1 will be low. If one is high and the other low, F1 will be low.
+   F1 is a quick way to tell whether the classifier is actually good at identifying members of a class, or if it is finding shortcuts (e.g., just identifying everything as a member of a large class).
+
+Method 1: feature importance and its value 
+                            0         1
+0               AvgInstCount  0.160389
+1                BBInstCount  0.118621
+2           AvgLoadInstCount  0.099084
+3          AvgStoreInstCount  0.077792
+4            BBLoadInstCount  0.076662
+5       AvgCaseValueDistance  0.059375
+6                      Range  0.057712
+7    TopClusterSuccessorProb  0.052635
+8            BBCallInstCount  0.051067
+9      TopBlockSuccessorProb  0.049846
+10      MaxCaseValueDistance  0.045925
+11      TopCaseSuccessorProb  0.045460
+12               NumClusters  0.037350
+13          BBStoreInstCount  0.026390
+14   NumSuccessorsWithSwitch  0.013856
+15     HasSwitchInSuccessors  0.011578
+16  MaxSingleClusterNumCases  0.009382
+17              BBHasHotEdge  0.006877 
+
+Method 2: feature importance and its value 
+                            0         1
+0            BBCallInstCount  0.015000
+1                BBInstCount  0.010000
+2      TopBlockSuccessorProb  0.003333
+3    NumSuccessorsWithSwitch  0.001667
+4      HasSwitchInSuccessors  0.001667
+5           BBStoreInstCount  0.001667
+6   MaxSingleClusterNumCases  0.001667
+7               BBHasHotEdge  0.000000
+8       TopCaseSuccessorProb -0.001667
+9                NumClusters -0.001667
+10      MaxCaseValueDistance -0.005000
+11           BBLoadInstCount -0.006667
+12                     Range -0.008333
+13          AvgLoadInstCount -0.011667
+14      AvgCaseValueDistance -0.011667
+15         AvgStoreInstCount -0.011667
+16              AvgInstCount -0.011667
+17   TopClusterSuccessorProb -0.016667 
+
+Method 3: feature importance and its value 
+                            class_0   class_1  ...   class_5  mean|shap|
+BBLoadInstCount           0.022299  0.018359  ...  0.020472    0.033605
+BBCallInstCount           0.012410  0.012365  ...  0.010350    0.019246
+BBInstCount               0.013028  0.010800  ...  0.017164    0.018631
+AvgCaseValueDistance      0.010834  0.008445  ...  0.009808    0.015064
+AvgInstCount              0.010566  0.009162  ...  0.009073    0.012581
+AvgStoreInstCount         0.009439  0.005158  ...  0.008930    0.010185
+AvgLoadInstCount          0.009015  0.009046  ...  0.006108    0.009912
+TopClusterSuccessorProb   0.007009  0.007120  ...  0.005043    0.009167
+MaxCaseValueDistance      0.007214  0.004611  ...  0.006406    0.009116
+Range                     0.008953  0.006476  ...  0.005686    0.008582
+TopBlockSuccessorProb     0.006529  0.005257  ...  0.005816    0.007131
+TopCaseSuccessorProb      0.005857  0.004423  ...  0.003552    0.005904
+NumClusters               0.004846  0.003653  ...  0.003311    0.005816
+BBStoreInstCount          0.003522  0.002445  ...  0.001519    0.004306
+NumSuccessorsWithSwitch   0.004437  0.002390  ...  0.001395    0.002974
+HasSwitchInSuccessors     0.003396  0.002356  ...  0.001256    0.002772
+BBHasHotEdge              0.001303  0.001488  ...  0.000847    0.001529
+MaxSingleClusterNumCases  0.000933  0.000727  ...  0.000752    0.001185
+
+[18 rows x 7 columns]
