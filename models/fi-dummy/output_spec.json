@@ -1,0 +1,14 @@
+
+[
+    {
+        "logging_name": "inlining_decision",
+        "tensor_spec": {
+            "name": "PartitionedCall",
+            "port": 0,
+            "type": "float64_t",
+            "shape": [
+                1
+            ]
+        }
+    }
+]
