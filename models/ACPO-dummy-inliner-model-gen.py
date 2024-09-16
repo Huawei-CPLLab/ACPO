@@ -1,12 +1,11 @@
-#===- ACPO-dummy-inliner-model-gen.py - Generate Loop Unroll Model ------------===//
+#!/usr/bin/env python3
+# ===- ACPO-dummy-inliner-model-gen.py - Generate Dummy Inliner Model ------===#
 #
 # Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
 # See https://llvm.org/LICENSE.txt for license information.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 #
-# Copyright (C) 2021-2023. Huawei Technologies Co., Ltd. All rights reserved.
-#
-#===----------------------------------------------------------------------===//
+# ===-----------------------------------------------------------------------===#
 
 """Generate a mock model ACPO Inline ML framework
 
