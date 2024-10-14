@@ -3,14 +3,14 @@
     "work_path": "./work/",
     "log_path": "./log/",
     "data":{
-        "path"          : "./data/v3/",
-        "file_name"     : "raw_data_2",
+        "path"          : ".",
+        "file_name"     : "total-features-polybench",
         "processed_file": "data_v2",
         "save_file"     : false
     },
     "model": {
-        "name"    : "standalone16_v3.0.5",
-        "path"    : "lu.pb/",
+        "name"    : "inline_modelV0.0",
+        "path"    : "inline.pb/",
         "sc_file" : "sc.pkl",
         "cat_file": "cats.pkl"
     },
@@ -19,8 +19,8 @@
         "file_name": "test_data"
     },
     "index": {
-        "x_col_start" : 3,
-        "x_col_end"   : -7,
+        "x_col_start" : 0,
+        "x_col_end"   : -2,
         "y_col"       : -1
     },
     "unique_key": ["Benchmark",
@@ -28,52 +28,27 @@
                    "FunctionName",
                    "BasicBlockName"
                   ],
-    "class_key" : ["MinJumpTableEntries"],
+    "class_key" : ["should_inline"],
     "remove_duplicates": {
-        "keys"     : ["Benchmark",
-                    "ModuleName",
-                    "FunctionName",
-                    "BasicBlockName"
-                    ],
+        "keys"     : [],
         "order_key": "",
         "ascending": true,
-        "keep"     : "last"
+        "keep"     : ""
     },
     "prune_data": {
-        "key"    : "Benchmark",
-        "values" : ["consumer_jpeg_c",
-                    "automotive_susan_e",
-                    "consumer_lame",
-                    "automotive_susan_c",
-                    "consumer_jpeg_d",
-                    "telecom_gsm",
-                    "security_rijndael_d",
-                    "clomp",
-                    "pennant",
-                    "automotive_susan_s",
-                    "security_blowfish_d",
-                    "security_blowfish_e",
-                    "security_pgp_d",
-                    "security_pgp_e",
-                    "security_rijndael_e"
-                    ],
-        "queries": ["speedup < 1.0"],
-        "logic"  : "AND"
+        "key"    : "",
+        "values" : [],
+        "queries": [],
+        "logic"  : ""
     },
     "drop_feature": {
-        "keys": ["IsSuitableForJumpTables",
-                "LowCaseValue",
-                "HighCaseValue",
-                "SwitchNumCases",
-                "TotalClusterNumCases",
-                "MaxSingleClusterRange"
-                ]
+        "keys": []
     },
     "remove_constant_feature":{
         "debug": false
     },
     "feature_to_class": {
-        "keys": ["MinJumpTableEntries"],
+        "keys": ["should_inline"],
         "cat" : {},
         "path": ""
     },
