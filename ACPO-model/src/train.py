@@ -4,6 +4,7 @@ from __future__ import print_function
 import glob
 import os
 import time
+import subprocess
 
 import numpy as np
 import pandas as pd
@@ -11,6 +12,7 @@ import sklearn
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from sklearn import tree
 from sklearn.model_selection import *
 from sklearn.preprocessing import *
 from torch.optim.lr_scheduler import StepLR
@@ -20,6 +22,8 @@ from losses import loss_dict  # Loss dictionary
 from models import *  # Model selection settings
 from settings import *  # Training settings
 from utils import *  # Utility and metrics
+
+import pdb
 
 # ------------------------- GPU/CPU Pytorch selection --------------------------
 
@@ -89,7 +93,7 @@ def trainClassification(args, model, device, train_loader, optimizer, loss_func,
     return accuracy, metrics
 
 
-def testClassification(model, device, test_loader, log_dir, batch_log=False):
+def testClassification(args, model, device, test_loader, log_dir, batch_log=False):
 
     # test_loss, test_loss_mse = 0, 0
     # test_loss_batch, test_loss_batch_mse = 0, 0
@@ -147,7 +151,7 @@ def trainRegression(args, model, device, train_loader, optimizer, loss_func, epo
 
     for batch_idx, (data, target) in enumerate(train_loader):
 
-        data, target = data.to(device), target.to(device)
+        data, target = data.to(device), (target.to(device)).type(torch.float)
         output       = model(data)
         loss         = loss_func(output, target)
         loss.backward()
@@ -191,10 +195,11 @@ def trainRegression(args, model, device, train_loader, optimizer, loss_func, epo
 
     print(f"Square Error: Mean: {metrics['train_mse']:.3f}\n")
 
-    return metrics
+    accuracy = -metrics['train_mse']
+    return accuracy, metrics
 
 
-def testRegression(model, device, test_loader, log_dir):
+def testRegression(args, model, device, test_loader, log_dir):
 
     # test_loss, test_loss_mse = 0, 0
     # test_loss_batch, test_loss_batch_mse = 0, 0
@@ -223,15 +228,15 @@ def testRegression(model, device, test_loader, log_dir):
           f"Number of samples: {len(test_loader.dataset)}")
 
     print(f"Absolute Error: "
-          f"Mean: {metrics['train_mae']:.3f}, "
-          f"Mean Percentage: {100*metrics['train_mape']:.0f}%")
+          f"Mean: {metrics['test_mae']:.3f}, "
+          f"Mean Percentage: {100*metrics['test_mape']:.0f}%")
 
-    print(f"Square Error: Mean: {metrics['train_mse']:.3f}\n")
+    print(f"Square Error: Mean: {metrics['test_mse']:.3f}\n")
 
-    return metrics
+    accuracy = -metrics['test_mse']
+    return accuracy, metrics
 
-
-def learn(train_data_path:str, test_data_path:str, log_dir:str, train_kwargs:dict, test_kwargs:dict):
+def learn(args, train_data_path:str, test_data_path:str, log_dir:str, train_kwargs:dict, test_kwargs:dict):
     """This function fit a model for the given training data.
 
     Args:
@@ -243,32 +248,31 @@ def learn(train_data_path:str, test_data_path:str, log_dir:str, train_kwargs:dic
 
     Returns:
         csv: accuracy of the trained model.
-    """    
+    """
 
-    print ("\nImporting Train Data:") 
+    print ("\nImporting Train Data:")
     train_dataset = CSVDataset(train_data_path,
                             args.incl_noinline_features,
                             feature_scale=args.feature_scale!='off',
                             feature_transform_pca=args.pca,
                             feature_select=args.feature_select,
                             mode='train',
-                            x_col_start=args.index["x_col_start"],
-                            x_col_end=args.index["x_col_end"],
-                            y_col=args.index["y_col"],
+                            x_col_start=args.x_col_start,
+                            x_col_end=args.x_col_end,
+                            y_col=args.y_col,
                             log_dir=args.log_dir,
                             debug=args.debug,
                             )
 
-    print ("\nImporting Test Data:") 
+    print ("\nImporting Test Data:")
     test_dataset = CSVDataset(test_data_path,
                             args.incl_noinline_features,
                             feature_scale=train_dataset.get_feature_scaler() if\
                                         args.feature_scale=='same' else args.feature_scale!='off',
                             feature_transform_pca=train_dataset.get_feature_pca(),
                             feature_select=train_dataset.get_feature_selector(),
-                            x_col_start=args.index["x_col_start"],
-                            x_col_end=args.index["x_col_end"],
-                            y_col=args.index["y_col"],
+                            x_col_start=args.x_col_start,
+                            x_col_end=args.x_col_end,
                             mode='test',
                             log_dir=args.log_dir,
                             debug=args.debug,
@@ -279,7 +283,7 @@ def learn(train_data_path:str, test_data_path:str, log_dir:str, train_kwargs:dic
 
     num_features = train_dataset.num_features()
     # num_classes  = train_dataset.num_classes()
-    print(f"# of features: {num_features} \n" 
+    print(f"# of features: {num_features} \n"
           f"# of classes: {args.num_classes} \n")
 
     train_log = CSVLogger(os.path.join(log_dir, "log_train.csv"))
@@ -289,6 +293,7 @@ def learn(train_data_path:str, test_data_path:str, log_dir:str, train_kwargs:dic
     best_epoch   = None
     test_metrics = dict()
 
+    loss_fn = loss_dict[args.loss]   # assign loss function from given arguments
     if args.algorithm == 'nn':
 
         if args.task == 'regression':
@@ -304,12 +309,12 @@ def learn(train_data_path:str, test_data_path:str, log_dir:str, train_kwargs:dic
         for epoch in range(1, args.epochs + 1):
 
             if args.task == 'regression':
-                train_epoch_log = trainRegression(args, model, device, train_loader, optimizer, loss_fn, epoch, log_dir)
-                test_epoch_log  = testRegression(model, device, test_loader, log_dir)
+                train_epoch_accuracy, train_epoch_log = trainRegression(args, model, device, train_loader, optimizer, loss_fn, epoch, log_dir)
+                test_epoch_accuracy, test_epoch_log  = testRegression(args, model, device, test_loader, log_dir)
 
             if args.task == 'classification':
                 train_epoch_accuracy, train_epoch_log = trainClassification(args, model, device, train_loader, optimizer, loss_fn, epoch, log_dir)
-                test_epoch_accuracy, test_epoch_log   = testClassification(model, device, test_loader, log_dir)
+                test_epoch_accuracy, test_epoch_log   = testClassification(args, model, device, test_loader, log_dir)
 
             scheduler.step()
 
@@ -325,14 +330,15 @@ def learn(train_data_path:str, test_data_path:str, log_dir:str, train_kwargs:dic
 
                 if args.save_model:
                     torch.save(model.state_dict(), os.path.join(log_dir, "plu.pt"))
-                    save_pb(model, log_dir, num_features)
+                    # save_pb(model, log_dir, num_features)
+                    save_pb_inline(model, log_dir, num_features)
 
             test_metrics["test_classification"] = best_epoch
 
     if args.algorithm == 'dt':
 
         x_train, y_train = train_dataset.get_all_data()
-        model            = sklearn.tree.DecisionTreeRegressor().fit(x_train, y_train)
+        model            = tree.DecisionTreeRegressor().fit(x_train, y_train)
         y_train1         = model.predict(x_train)
 
         plot(np.array(y_train), y_train1, log_dir, "train")
@@ -354,7 +360,7 @@ def learn(train_data_path:str, test_data_path:str, log_dir:str, train_kwargs:dic
 def loocv(args, train_kwargs, test_kwargs):
 
     # Leave-one-out Cross-Validation (LOOCV)
-    print ("------------- Leave-one-out Cross Validation Mode ---------------") 
+    print ("------------- Leave-one-out Cross Validation Mode ---------------")
 
     # There needs to be multiple csv files to do cross-validation
     csv_files = glob.glob(os.path.join(args.data_dir, "**/*.csv"), recursive=True)
@@ -401,7 +407,7 @@ def loocv(args, train_kwargs, test_kwargs):
         df_test.to_csv(test_data, index = False, sep=',') 
 
         # Leaving f out of csv_files (f will be used for test only) 
-        best_metrics = learn(train_data,
+        best_metrics = learn(args, train_data,
                              test_data,
                              bench_log_dir,
                              train_kwargs,
@@ -419,7 +425,7 @@ def loocv(args, train_kwargs, test_kwargs):
 def standalone(df, args, train_kwargs, test_kwargs, portion:int=10):
 
     # Standalone Train/Test
-    print ("------------------- Standalone Train/Test Mode: -----------------") 
+    print ("------------------- Standalone Train/Test Mode: -----------------")
 
     # Number of rows for test in percentage
     test_rows = int(len(df.index) * portion/100)
@@ -429,15 +435,19 @@ def standalone(df, args, train_kwargs, test_kwargs, portion:int=10):
 
     train = df.iloc[np.r_[0, test_rows + 1: np.shape(df)[0]], :]
 
-    train_data = os.path.join(args.work_dir, "temp/", "train_data.csv")
-    test_data  = os.path.join(args.work_dir, "temp/", "test_data.csv")
+    temp_dir = os.path.join(args.work_dir, 'temp/')
+    if not os.path.exists(temp_dir):
+        os.mkdir(temp_dir)
+
+    train_data = os.path.join(temp_dir, "train_data.csv")
+    test_data  = os.path.join(temp_dir, "test_data.csv")
 
     print("Train-set:", np.shape(train),"Test-set:", np.shape(test))
 
     train.to_csv(train_data, index=False, sep=',')
     test.to_csv(test_data  , index=False, sep=',')
 
-    best_metrics = learn(train_data,
+    best_metrics = learn(args, train_data,
                          test_data,
                          args.log_dir,
                          train_kwargs,
@@ -450,13 +460,13 @@ def standalone(df, args, train_kwargs, test_kwargs, portion:int=10):
 def kfold(df, args, train_kwargs, test_kwargs, k_folds:int=10):
 
     # Kfold Cross-Validation
-    print ("------------- Kfold Cross Validation Mode -------------------------") 
 
+    print ("------------- Kfold Cross Validation Mode -------------------------")
     # Define the K-fold Cross Validator
     k_folds = args.folds
     print(f"Number of folds: {k_folds}")
     kfold   = KFold(n_splits=k_folds, shuffle=True, random_state=2)
-    
+
     for fold, (train_ids, test_ids) in enumerate(kfold.split(df)):
 
         print(f'FOLD {fold}')
@@ -467,13 +477,16 @@ def kfold(df, args, train_kwargs, test_kwargs, k_folds:int=10):
         print(f"Train-set: {np.shape(train)}, Test-set: {np.shape(test)}")
         train_fold = "train_fold_" + str(fold) + ".csv"
         test_fold  = "test_fold_"  + str(fold) + ".csv"
-        train_fold = os.path.join(args.work_dir, "temp/", train_fold)
-        test_fold  = os.path.join(args.work_dir, "temp/", test_fold )
+        temp_dir = os.path.join(args.work_dir, 'temp/')
+        if not os.path.exists(temp_dir):
+            subprocess.run(f'mkdir -p {temp_dir}', shell = True)
+        train_fold = os.path.join(temp_dir, train_fold)
+        test_fold  = os.path.join(temp_dir, test_fold )
 
         train.to_csv(train_fold, index=False, sep=',')
         test.to_csv(  test_fold, index=False, sep=',')
 
-        best_metrics = learn(train_fold,
+        best_metrics = learn(args, train_fold,
                              test_fold,
                              args.log_dir,
                              train_kwargs,
@@ -525,6 +538,9 @@ def main():
         df = data_loader(args)
         print(f"The data shape is {df.shape}. \n"
               f"The features are \n {df.columns.values}")
+
+    if args.cv == 'loocv':
+        prepare_loocv_data(args)
 
     # run learning algorithm (e.g., LOOCV, Standalone, Kfold)
     print(f"\nThe hyper-parameters are: \n"
