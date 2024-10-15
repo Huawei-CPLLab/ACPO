@@ -271,6 +271,7 @@ def learn(args, train_data_path:str, test_data_path:str, log_dir:str, train_kwar
                             feature_select=train_dataset.get_feature_selector(),
                             x_col_start=args.x_col_start,
                             x_col_end=args.x_col_end,
+                            y_col=args.y_col,
                             mode='test',
                             log_dir=args.log_dir,
                             debug=args.debug,
