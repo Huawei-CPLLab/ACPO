@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from numpy import outer
+#import tensorflow_decision_forests as tfdf 
 import pandas as pd
 
 class Net(nn.Module):
@@ -184,3 +185,28 @@ class Classifier2(nn.Module):
         '''
         return self.disc
 
+'''
+tfdf need complex env, not adapted yet
+def random_forests(train_path, test_path, save_model_path):
+
+    # load dataset into pandas dataframe
+    train_df = pd.read_csv(train_path)
+    test_df = pd.read_csv(test_path)
+
+    # convert the dataset into a TensorFlow dataset
+    train_ds = tfdf.keras.pd_dataframe_to_tf_dataset(train_df, label="my_label")
+    test_ds = tfdf.keras.pd_dataframe_to_tf_dataset(test_df, label="my_label")
+
+    # train a Random Forest model
+    model = tfdf.keras.RandomForestModel()
+    model.fit(train_ds)
+
+    # summary of the model structure
+    model.summary()
+
+    # evaluate the model
+    model.evaluate(test_ds)
+
+    # export the model to a saved model
+    model.save(save_model_path)
+'''

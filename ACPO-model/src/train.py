@@ -23,8 +23,6 @@ from models import *  # Model selection settings
 from settings import *  # Training settings
 from utils import *  # Utility and metrics
 
-import pdb
-
 # ------------------------- GPU/CPU Pytorch selection --------------------------
 
 # pytorch configuration to use cuda if GPU available or CPU for computation
@@ -330,8 +328,9 @@ def learn(args, train_data_path:str, test_data_path:str, log_dir:str, train_kwar
 
                 if args.save_model:
                     torch.save(model.state_dict(), os.path.join(log_dir, "plu.pt"))
+                    # bypass save_bp
                     # save_pb(model, log_dir, num_features)
-                    save_pb_inline(model, log_dir, num_features)
+                    save_pb_tmp_fuc(model, log_dir, num_features)
 
             test_metrics["test_classification"] = best_epoch
 
@@ -511,12 +510,25 @@ def cv_method(df, args, train_kwargs, test_kwargs):
 
     return "No algorithm is selected"
 
+def check_params(args):
+    if (args.task == 'classification') and (args.loss != 'cross_entropy') and (args.algorithm == 'nn'):
+        print('task classification best use cross_entropy loss')
+        return False
+    
+    if (args.task == 'regression') and (args.loss == 'cross_entropy') and (args.algorithm == 'nn'):
+        print('cross_entropy loss is not suit for task regression')
+        return False
 
+    return True
 # ------------------------------- The main body --------------------------------
 def main():
     # updating train/test arguments
     train_kwargs = {'batch_size': args.batch_size}
     test_kwargs  = {'batch_size': args.test_batch_size}
+
+    #check loss and task param
+    if check_params(args) == False:
+        return
 
     # setting required configuration for GPU
     if use_cuda:
@@ -539,6 +551,7 @@ def main():
         print(f"The data shape is {df.shape}. \n"
               f"The features are \n {df.columns.values}")
 
+    #loocv data need additional processing
     if args.cv == 'loocv':
         prepare_loocv_data(args)
 

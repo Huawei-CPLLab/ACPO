@@ -1,0 +1,65 @@
+{
+    "root_path" : "../sample_model",
+    "work_path": "./work/",
+    "log_path": "./log/",
+    "data":{
+        "path"          : "../test",
+        "file_name"     : "total-features-polybench",
+        "processed_file": "data_v2",
+        "save_file"     : false
+    },
+    "model": {
+        "name"    : "inline_modelV0.0",
+        "path"    : "inline.pb/",
+        "sc_file" : "sc.pkl",
+        "cat_file": "cats.pkl"
+    },
+    "test" :{
+        "path"     : "./work/test/",
+        "file_name": "test_data"
+    },
+    "index": {
+        "x_col_start" : 0,
+        "x_col_end"   : -2,
+        "y_col"       : -1
+    },
+    "unique_key": ["Benchmark",
+                   "ModuleName",
+                   "FunctionName",
+                   "BasicBlockName"
+                  ],
+    "class_key" : ["Classes"],
+    "remove_duplicates": {
+        "keys"     : [],
+        "order_key": "",
+        "ascending": true,
+        "keep"     : ""
+    },
+    "prune_data": {
+        "key"    : "",
+        "values" : [],
+        "queries": [],
+        "logic"  : ""
+    },
+    "drop_feature": {
+        "keys": []
+    },
+    "remove_constant_feature":{
+        "debug": false
+    },
+    "feature_to_class": {
+        "keys": ["Classes"],
+        "cat" : {},
+        "path": ""
+    },
+    "features_relation":{
+        "key"        : ["MinJumpTableEntries"],
+        "correlation": true,
+        "sort"       : false,
+        "ascending"  : false,
+        "threshold"  : 0.03
+    },
+    "uncorrelated_features" : [],
+    "header"         : ["benchmark", "", "", "", "prediction", "actual"],
+    "id"             : [-4, 0, 1, 2]
+}

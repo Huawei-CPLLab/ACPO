@@ -2,11 +2,17 @@ import torch
 import torch.nn
 
 def MSELoss_norm(output, target):
+    contains_zero = torch.eq(target, 0)
+    exists_zero = torch.any(contains_zero)
+    assert exists_zero == False, "ERR:There are 0 in the target,can't use mse_norm loss"
     loss_per_sample = torch.nn.MSELoss(reduction='none')(output, target)
     loss_per_sample_normalized = loss_per_sample / target
     return torch.mean(loss_per_sample_normalized)
 
 def L1Loss_norm(output, target):
+    contains_zero = torch.eq(target, 0)
+    exists_zero = torch.any(contains_zero)
+    assert exists_zero == False, "ERR:There are 0 in the target,can't use mae_norm loss"
     loss_per_sample = torch.nn.L1Loss(reduction='none')(output, target)
     loss_per_sample_normalized = loss_per_sample / target
     return torch.mean(loss_per_sample_normalized)

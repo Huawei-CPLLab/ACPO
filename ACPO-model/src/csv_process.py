@@ -16,7 +16,6 @@ from torch.utils.data.dataset import Dataset
 import random
 
 import subprocess
-import pdb
 
 def remove_duplicates(data, keys:list=None, order_key:str=None, ascending:bool=True, keep:str="last"):
     """This function removes duplicates from the given dataset based on the given keys.
@@ -391,7 +390,7 @@ def features_relation(data, key:str=None, correlation:bool=True, plot=False, log
         return df
 
     # In case key is a list, it means we already added "Classes" attribute to df.
-    key = key if isinstance(key, str) else "should_inline"
+    key = key if isinstance(key, str) else "Classes"
 
     # correlation of each feature with specific key or "Classes", sorted or unsorted.
     if sort:
@@ -434,7 +433,9 @@ def shuffle_raw_data(raw_data, shuffled_data) -> None:
         writer.writerows(data)
 
 def prepare_loocv_data(args):
-    # TODO: Split training data?
+    # TODO: Split training data
+    # temporary processing for loocv.
+    # It will be fixed as soon as possible
     raw_data = os.path.join(args.data["path"], args.data["file_name"] + ".csv")
     loocv_data_path = args.data_dir
 
@@ -607,7 +608,7 @@ class CSVDataset(Dataset):
         return num_features
 
     def num_classes(self):
-        return len(self.df["should_inline"].unique())
+        return len(self.df["Classes"].unique())
 
     def get_all_data(self):
         if self.incl_noinline_features:
