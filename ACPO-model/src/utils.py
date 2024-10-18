@@ -11,8 +11,12 @@ from sklearn.metrics import f1_score, accuracy_score, jaccard_score
 plt.rcParams['agg.path.chunksize'] = 10000
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=FutureWarning)
-    import onnx
-    import onnx_tf.backend
+    '''
+    tensorflow stopped onnx support a while ago, we are finding solution now
+    model save is not avaliable temporary
+    '''
+#    import onnx
+#    import onnx_tf.backend
 
 
 def calc_classification_accuracy(label, output, log=False):
@@ -99,6 +103,12 @@ def plotgrad(grad, log_dir, name="training-gradplot"):
     ax.set_ylim(0, 2.5)
     plt.savefig(os.path.join(log_dir, name + ".png"), format='png', dpi=300)  
 
+def save_pb_tmp_fuc(torch_model, log_dir, num_features):
+    '''
+    Model save is not avaliable because tensorflow stopped addon support a while ago
+    so we need bypass save bp temporary
+    '''
+    pass
 
 def save_pb(torch_model, log_dir, num_features):
     # Export the trained model to ONNX
