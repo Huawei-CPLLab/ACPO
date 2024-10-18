@@ -6,7 +6,6 @@ import yaml
 
 from losses import loss_dict
 
-
 def str2bool(v):
     if isinstance(v, bool):
        return v
@@ -50,7 +49,7 @@ parser.add_argument('--prune-value', type=list, default=None,
                     help="Threshold which we will use to prune data.")
 parser.add_argument('--unique-key', type=list, default=None, 
                     help="Unique key(s) to dataset which determine duplicates.")
-parser.add_argument('--class-key', type=list, default=None, 
+parser.add_argument('--class-key', type=list, default='Classes',
                     help="key(s)/feature(s) used to convert create classes.")
 parser.add_argument('--num-classes', type=int, default=1,
                     help="Number of possible classes which can be derived from the dataset itself.")
