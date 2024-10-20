@@ -43,6 +43,7 @@ class Model:
 
 
 def create_named_pipe(name):
+  return 1
   if os.path.exists(name):
     return 0
   os.mkfifo(name)
@@ -99,7 +100,7 @@ def MLFSM(cmd_pipe, resp_pipe):
                                 model_info_dict.get('signature'),
                                 model_info_dict.get('modeldirectory'),
                                 model_info_dict.get('imported'),
-                                model_info_dict.get('infer'),
+                                model_info_dict.get('imported'),
                                 model_info_dict.get('outputkey'),
                                 model_info_dict.get('classesdict'))
               model_dict[model_name] = new_model
@@ -215,5 +216,5 @@ if create_named_pipe(response_pipe_name) == 1:
   if create_named_pipe(command_pipe_name) == 1:
     MLFSM(command_pipe_name, response_pipe_name)
 ACPO_LOG("Terminating ML interface\n")
-os.remove(command_pipe_name)
-os.remove(response_pipe_name)
+# os.remove(command_pipe_name)
+# os.remove(response_pipe_name)

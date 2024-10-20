@@ -12,7 +12,11 @@ from sklearn.feature_selection import *
 import numpy as np
 import os
 import re
-import tensorflow as tf
+import torch
+# import tensorflow as tf
+from ACPOmodel.src.models import NetFC
+
+
 
 
 # Control ACPO log messages
@@ -35,17 +39,17 @@ def ACPO_LOG(msg):
 #os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 # Set the memory growth of GPU
-gpus = tf.config.list_physical_devices('GPU')
-if gpus:
-  # Restrict TensorFlow to only allocate 1GB of memory on the first GPU
-  try:
-    tf.config.set_logical_device_configuration(
-        gpus[0], [tf.config.LogicalDeviceConfiguration(memory_limit=1000)])
-    logical_gpus = tf.config.list_logical_devices('GPU')
-    ACPO_LOG(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
-  except RuntimeError as e:
-    # Virtual devices must be set before GPUs have been initialized
-    ACPO_LOG(e)
+# gpus = tf.config.list_physical_devices('GPU')
+# if gpus:
+#   # Restrict TensorFlow to only allocate 1GB of memory on the first GPU
+#   try:
+#     tf.config.set_logical_device_configuration(
+#         gpus[0], [tf.config.LogicalDeviceConfiguration(memory_limit=1000)])
+#     logical_gpus = tf.config.list_logical_devices('GPU')
+#     ACPO_LOG(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+#   except RuntimeError as e:
+#     # Virtual devices must be set before GPUs have been initialized
+#     ACPO_LOG(e)
 
 # Control the TensorFlow junk warnings
 #   0 = all messages are logged (default behavior)
@@ -59,15 +63,31 @@ field_name_set = {
     "outputkey", "modelinference"
 }
 
+def get_torch_model(model_dir):
+  pass
+
+
+
+
+
 def get_imported_and_infer(model_dir, signature):
   """
   Return the imported model and infer function using the
   given model_dir and signature
   """
-  model_path = os.path.join(os.path.dirname(__file__), model_dir)
-  imported = tf.saved_model.load(model_path)
-  infer = imported.signatures[signature]
-  return (imported, infer)
+  model_path = os.path.join(os.path.dirname(__file__), model_dir) + "modelfi.pth"
+
+  print(model_path)
+  # imported = tf.saved_model.load(model_path)
+  imported = NetFC()
+  state_dict = torch.load("/Users/lvyinrun/workspace/openEuler/ACPO_zm/ACPOmodel/src/log/inline_modelV0.0/modelfi.pth", weights_only=False)
+  imported.load_state_dict(state_dict)
+  # imported = torch.load(model_path)
+  print(imported)
+  return imported
+  # infer = imported.signatures[signature]
+  # print(infer)
+  # return (imported, infer)
 
 
 def get_field_name(line):
@@ -103,12 +123,14 @@ def load_model(model_spec_file):
   lines = f.readlines()
   model_info_dict = {}
   for line in lines:
-    if (line.strip() == ""):
+    if (line.strip() == "" or line.startswith('#')):
       continue
     field_name = get_field_name(line).lower()
     field_value = get_field_value(line)
+    print(field_name, field_value)
     if (field_name not in field_name_set or field_value == ""
         or model_info_dict.get(field_name) is not None):
+      print("shit")
       return ()
     else:
       model_info_dict[field_name] = field_value
@@ -129,9 +151,13 @@ def load_model(model_spec_file):
   model_info_dict['outputlist'] = output_list
   model_dir = model_info_dict.get('modeldirectory')
   signature = model_info_dict.get('signature')
-  imported_and_infer = get_imported_and_infer(model_dir, signature)
-  imported = imported_and_infer[0]
-  infer = imported_and_infer[1]
+
+  imported = get_imported_and_infer(model_dir, signature)
+
+  # imported_and_infer = get_imported_and_infer(model_dir, signature)
+  # imported = imported_and_infer[0]
+  # infer = imported_and_infer[1]
+  infer = "unknown"
   model_info_dict['imported'] = imported
   model_info_dict['infer'] = infer
   # TODO: use a pickle object to load into the classes_dict automatically (later)

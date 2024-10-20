@@ -299,7 +299,7 @@ def learn(args, train_data_path:str, test_data_path:str, log_dir:str, train_kwar
             model = Net(num_features).to(device)
 
         if args.task == 'classification':
-            model = Net2(num_features, args.num_classes).to(device)
+            model = NetFC(num_features, args.num_classes).to(device)
 
         optimizer = optim.Adam(model.parameters(), lr=args.lr)
         scheduler = StepLR(optimizer, step_size=args.lr_step, gamma=args.gamma)
@@ -328,7 +328,9 @@ def learn(args, train_data_path:str, test_data_path:str, log_dir:str, train_kwar
                 best_epoch = test_epoch_accuracy
 
                 if args.save_model:
-                    torch.save(model.state_dict(), os.path.join(log_dir, "plu.pt"))
+                    # torch.save(model.state_dict(), os.path.join(log_dir, "plu.pt"))
+                    print("Start saving models")
+                    torch.save(model.state_dict(), os.path.join(log_dir, "modelfi.pth"))
                     # bypass save_bp
                     # save_pb(model, log_dir, num_features)
                     save_pb_tmp_fuc(model, log_dir, num_features)

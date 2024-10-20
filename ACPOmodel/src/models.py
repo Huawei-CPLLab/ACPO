@@ -54,12 +54,12 @@ class Net(nn.Module):
         return output
 
 
-class Net2(nn.Module):
+class NetFC(nn.Module):
     '''
     Classification Task
     '''
-    def __init__(self, num_features=32, num_classes=24):
-        super(Net2, self).__init__()
+    def __init__(self, num_features=56, num_classes=2):
+        super(NetFC, self).__init__()
 
         #self.dropout = nn.Dropout(0.45, training=self.training)
         #Input (Layer 1)
