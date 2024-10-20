@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from numpy import outer
-import tensorflow_decision_forests as tfdf
+#import tensorflow_decision_forests as tfdf 
 import pandas as pd
 
 class Net(nn.Module):
@@ -54,12 +54,12 @@ class Net(nn.Module):
         return output
 
 
-class Net2(nn.Module):
+class NetFC(nn.Module):
     '''
     Classification Task
     '''
-    def __init__(self, num_features=32, num_classes=24):
-        super(Net2, self).__init__()
+    def __init__(self, num_features=56, num_classes=2):
+        super(NetFC, self).__init__()
 
         #self.dropout = nn.Dropout(0.45, training=self.training)
         #Input (Layer 1)
@@ -185,9 +185,10 @@ class Classifier2(nn.Module):
         '''
         return self.disc
 
-
+'''
+tfdf need complex env, not adapted yet
 def random_forests(train_path, test_path, save_model_path):
-    
+
     # load dataset into pandas dataframe
     train_df = pd.read_csv(train_path)
     test_df = pd.read_csv(test_path)
@@ -208,4 +209,4 @@ def random_forests(train_path, test_path, save_model_path):
 
     # export the model to a saved model
     model.save(save_model_path)
-
+'''

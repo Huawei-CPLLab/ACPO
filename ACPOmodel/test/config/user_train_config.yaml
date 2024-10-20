@@ -1,0 +1,66 @@
+class_key:
+    - Classes
+data:
+  file_name: total-features-polybench
+  path: ../test
+  processed_file: data_v2
+  save_file: false
+drop_feature:
+  keys:
+feature_to_class:
+  cat: {}
+  keys:
+    - Classes 
+  path: ''
+features_relation:
+  ascending: false
+  correlation: true
+  key:
+    - MinJumpTableEntries
+  sort: false
+  threshold: 0.03
+header:
+  - benchmark
+  - ''
+  - ''
+  - ''
+  - prediction
+  - actual
+id:
+  - -4
+  - 0
+  - 1
+  - 2
+index:
+  x_col_end: -2
+  x_col_start: 0 
+  y_col: -1
+log_path: ./log/
+model:
+  cat_file: cats.pkl
+  name: inline_modelV0.0 
+  path: iinline.pb/
+  sc_file: sc.pkl
+prune_data:
+  key:
+  logic:
+  queries:
+  values:
+remove_constant_feature:
+  debug: false
+remove_duplicates:
+  ascending: true
+  keep:
+  keys:
+  order_key: ''
+root_path: ../sample_model
+test:
+  file_name: test_data
+  path: ./work/test/
+uncorrelated_features: []
+unique_key:
+  - Benchmark
+  - ModuleName
+  - FunctionName
+  - BasicBlockName
+work_path: ./work/

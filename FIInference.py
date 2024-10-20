@@ -12,10 +12,12 @@ import numpy as np
 import os
 import pandas as pd
 import pickle as pk
-import tensorflow as tf
+import torch
+# import tensorflow as tf
 
 
 fi_path = os.path.join(os.path.dirname(__file__), './models/pfi.pb')
+fi_path = "/Users/lvyinrun/workspace/openEuler/ACPO_zm/ACPOmodel/src/log/inline_modelV0.0/"
 frozen_model = fi_path
 model_dir = fi_path
 class FIInference(MLInference):
@@ -24,9 +26,13 @@ class FIInference(MLInference):
     df = pd.DataFrame(self.features)
     pkl_file = os.path.join(os.path.dirname(__file__), model_dir, "sc.pkl")
     sc = pk.load(open(pkl_file, "rb"))
-    df = sc.transform(df.transpose())
+    print(df[0:56])
+    df = sc.transform(df[0:56].transpose())
     input = np.array(df, dtype=np.float32)
-    input = input.reshape(1, len(self.features))
+    # size not right
+    # input = input.reshape(1, len(self.features))
+    input = input.reshape(1, 56)
+    # return torch.utils.data.DataLoader(input)
     return input
 
   def should_inline(self, output):
@@ -48,9 +54,15 @@ class FIInference(MLInference):
 
     input = self.prepare_features()
 
-    output = self.infer(tf.constant(input))
+    print(input)
 
-    output = output.get(self.output_key)
+    with torch.no_grad():
+      output = self.infer(torch.from_numpy(input))
+      print(output.tolist()[0][0])
+
+    # output = self.infer(tf.constant(input))
+    # output = output.get(self.output_key)
+    output = output.tolist()[0][0];
     if (output is None):
       return {}
     output = output.numpy()

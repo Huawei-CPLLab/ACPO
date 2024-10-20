@@ -13,7 +13,9 @@ from sklearn.decomposition import *
 from sklearn.feature_selection import *
 from sklearn.preprocessing import *
 from torch.utils.data.dataset import Dataset
+import random
 
+import subprocess
 
 def remove_duplicates(data, keys:list=None, order_key:str=None, ascending:bool=True, keep:str="last"):
     """This function removes duplicates from the given dataset based on the given keys.
@@ -347,7 +349,6 @@ def plot_matrix(data, log_dir:str=None):
         plot_path = os.path.join(log_dir, "corr_plot_" + ".png")
         plt.savefig(plot_path, format="png", dpi=600)
 
-
 def features_relation(data, key:str=None, correlation:bool=True, plot=False, log_dir:str=None, sort=False, ascending=False, threshold:float=0.0):
     """This function returns correlation between features.
 
@@ -416,6 +417,33 @@ def create_log_folders(args) -> None:
     args.log_dir = os.path.join(args.log_path, args.model["name"])
     os.makedirs(args.log_dir, exist_ok=True)
 
+def shuffle_raw_data(raw_data, shuffled_data) -> None:
+    print("--- Shuffle Raw Data ---")
+
+    with open(raw_data, 'r') as raw_data_file:
+        reader = csv.reader(raw_data_file)
+        content = list(reader)
+        header = content[0]
+        data = content[1 : ]
+    random.shuffle(data)
+
+    with open(shuffled_data, 'w') as shuffled_data_file:
+        writer = csv.writer(shuffled_data_file)
+        writer.writerow(header)
+        writer.writerows(data)
+
+def prepare_loocv_data(args):
+    # TODO: Split training data
+    # temporary processing for loocv.
+    # It will be fixed as soon as possible
+    raw_data = os.path.join(args.data["path"], args.data["file_name"] + ".csv")
+    loocv_data_path = args.data_dir
+
+    print("--- loocv data parepare under development ---")
+    if not os.path.exists(args.data_dir):
+        os.mkdir(args.data_dir)
+    subprocess.run('cp ./work/temp/*fold*.csv ./data', shell = True)
+    pass
 
 def data_loader(args):
 
@@ -425,6 +453,7 @@ def data_loader(args):
     # FIXME: should consistent with args data flow
     raw_data = os.path.join(args.data["path"], args.data["file_name"] + ".csv")
     shuffled_data = os.path.join(args.work_path, "temp/", "shuffled" + ".csv")
+    shuffle_raw_data(raw_data, shuffled_data)
 
     print("--- Reading Data File ---")
     # preprocessing step: data preparation, data cleaning
@@ -444,13 +473,15 @@ def data_loader(args):
         df = pd.read_csv(shuffled_data, sep=",")
 
     # update number of classes
-    args.num_classes = len(df["Classes"].unique())
+    args.num_classes = len(np.unique(df[args.class_key].values))
 
     # ------------- cleaning data -------------
-    remove_duplicates(df)
+    if args.remove_duplicates['keys']:
+        remove_duplicates(df)
     # remove_duplicates(df, **args.remove_constant_feature)
 
-    prune_data(df, **args.prune_data)
+    if args.prune_data['key']:
+        prune_data(df, **args.prune_data)
 
     # remove null entries
     remove_null(df)
@@ -459,14 +490,14 @@ def data_loader(args):
     remove_constant_feature(df, **args.remove_constant_feature)
 
     # dropping some features
-    drop_feature(df, **args.drop_feature)
+    if args.drop_feature['keys']:
+        drop_feature(df, **args.drop_feature)
 
     # stat of data
     print(f"The dataset has {df.shape} rows and columns.\n")
     print(features_relation(df, **args.features_relation))
 
     return df
-
 
 class CSVDataset(Dataset):
     # Use x_col_start with ['IR','Function','Loop']  and
@@ -479,7 +510,7 @@ class CSVDataset(Dataset):
         feature_scale=True,
         feature_transform_pca=True,
         feature_select=True,
-        x_col_start=4,
+        x_col_start=0,
         x_col_end=-2,
         y_col=-1,
         log_dir=None,
@@ -505,7 +536,6 @@ class CSVDataset(Dataset):
 
         # read csv file and load row data into variables
         df = pd.read_csv(file_name, sep=",")
-
         # plot speedups with respect to -O3
         # self.plot_global_speedup(self, df)
 
