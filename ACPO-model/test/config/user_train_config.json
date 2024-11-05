@@ -9,10 +9,11 @@
         "save_file"     : false
     },
     "model": {
-        "name"    : "inline_modelV0.0",
-        "path"    : "inline.pb/",
-        "sc_file" : "sc.pkl",
-        "cat_file": "cats.pkl"
+        "name"      : "inline_modelV0.0",
+        "path"      : "inline.pb/",
+        "model_file": "modelfi.pt",
+        "sc_file"   : "sc.pkl",
+        "cat_file"  : "cats.pkl"
     },
     "test" :{
         "path"     : "./work/test/",
@@ -45,7 +46,8 @@
         "keys": []
     },
     "remove_constant_feature":{
-        "debug": false
+        "debug": false,
+        "autoremove": false
     },
     "feature_to_class": {
         "keys": ["Classes"],

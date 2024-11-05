@@ -14,7 +14,6 @@ from sklearn.feature_selection import *
 from sklearn.preprocessing import *
 from torch.utils.data.dataset import Dataset
 import random
-
 import subprocess
 
 def remove_duplicates(data, keys:list=None, order_key:str=None, ascending:bool=True, keep:str="last"):
@@ -235,7 +234,10 @@ def find_constant_feature(data, key:List[str]=None, debug:bool=False, alphanum:b
     return constant_feature
 
 
-def remove_constant_feature(data, debug=False):
+def remove_constant_feature(data, debug=False, autoremove=True):
+    # keep the constant_features undropped
+    if (not autoremove):
+        return
 
     constant_features = find_constant_feature(data, debug=debug)
     drop_feature(data, constant_features)
@@ -600,7 +602,8 @@ class CSVDataset(Dataset):
         return len(self.df.index)
 
     def num_features(self):
-        num_features = len(self.df.columns) - self.x_col_start + self.x_col_end
+        #TODO should be calcuated according to the sign
+        num_features = len(self.df.columns) - self.x_col_start + self.x_col_end + 1
 
         if self.incl_noinline_features:
             num_features *= 2
@@ -634,13 +637,13 @@ class CSVDataset(Dataset):
             self.df.replace([np.inf, -np.inf], np.nan, inplace=True)
             self.df.dropna(inplace=True)
 
-        x = self.df.iloc[:, self.x_col_start : self.x_col_end].values.astype(float)
+        x = self.df.iloc[:, self.x_col_start : self.x_col_end + 1].values.astype(float)
         y = self.df.iloc[:, self.y_col]
 
         return x, y
 
     def __getitem__(self, idx):
-        x = self.df.iloc[idx, self.x_col_start : self.x_col_end].values.astype(float)
+        x = self.df.iloc[idx, self.x_col_start : self.x_col_end + 1].values.astype(float)
         y = self.df.iloc[idx, self.y_col]
 
         if self.incl_noinline_features:
@@ -651,7 +654,7 @@ class CSVDataset(Dataset):
             no_inlining_row = self.df_base.loc[self.df_base["function"] == function]
             no_inlining_row = no_inlining_row[no_inlining_row["benchmark"] == benchmark]
             x_no_inlining = pd.to_numeric(
-                no_inlining_row.iloc[0, self.x_col_start : self.x_col_end]
+                no_inlining_row.iloc[0, self.x_col_start : self.x_col_end + 1]
             )
 
             # FIXME: temporary hack to handle cases where we can't find the 'no-inlined' version of a function
@@ -685,7 +688,7 @@ class CSVDataset(Dataset):
         return self.sel
 
     def __scale_features(self, df, df_base, feature_scale):
-        df_X = df.iloc[:, self.x_col_start : self.x_col_end]
+        df_X = df.iloc[:, self.x_col_start : self.x_col_end + 1]
         df_Y = df.iloc[:, self.y_col]
 
         self.sc = None
@@ -704,12 +707,12 @@ class CSVDataset(Dataset):
             self.sc = feature_scale
 
         if self.sc is not None:
-            df.iloc[:, self.x_col_start : self.x_col_end] = self.sc.transform(
-                df.iloc[:, self.x_col_start : self.x_col_end]
+            df.iloc[:, self.x_col_start : self.x_col_end + 1] = self.sc.transform(
+                df.iloc[:, self.x_col_start : self.x_col_end + 1]
             )
             if df_base is not None:
-                df_base.iloc[:, self.x_col_start : self.x_col_end] = self.sc.transform(
-                    df_base.iloc[:, self.x_col_start : self.x_col_end]
+                df_base.iloc[:, self.x_col_start : self.x_col_end + 1] = self.sc.transform(
+                    df_base.iloc[:, self.x_col_start : self.x_col_end + 1]
                 )
 
             if "feature-scaling" in self.debug:
@@ -719,7 +722,7 @@ class CSVDataset(Dataset):
 
     def __pca_features(self, df, df_base, feature_transform_pca):
         df.reset_index(drop=True, inplace=True)
-        df_X = df.iloc[:, self.x_col_start : self.x_col_end]
+        df_X = df.iloc[:, self.x_col_start : self.x_col_end + 1]
         df_Y = df.iloc[:, self.y_col]
 
         self.pca = None
@@ -743,7 +746,7 @@ class CSVDataset(Dataset):
         return df, df_base
 
     def __select_features(self, df, df_base, feature_select):
-        df_X = df.iloc[:, self.x_col_start : self.x_col_end]
+        df_X = df.iloc[:, self.x_col_start : self.x_col_end + 1]
         df_Y = df.iloc[:, self.y_col]
 
         if feature_select is True:

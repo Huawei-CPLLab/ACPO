@@ -12,7 +12,7 @@ plt.rcParams['agg.path.chunksize'] = 10000
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=FutureWarning)
     '''
-    tensorflow stopped onnx support a while ago, we are finding solution now
+    tensorflow stopped addon support a while ago,we are finding solution now
     model save is not avaliable temporary
     '''
 #    import onnx
@@ -103,16 +103,14 @@ def plotgrad(grad, log_dir, name="training-gradplot"):
     ax.set_ylim(0, 2.5)
     plt.savefig(os.path.join(log_dir, name + ".png"), format='png', dpi=300)  
 
-def save_pb_tmp_fuc(torch_model, log_dir, num_features):
-    '''
-    Model save is not avaliable because tensorflow stopped addon support a while ago
-    so we need bypass save bp temporary
-    '''
-    pass
 
-def save_pb(torch_model, log_dir, num_features):
+def save_pb(args, torch_model, log_dir, num_features):
     # Export the trained model to ONNX
-    inference_input = torch.randn(1, num_features).cuda()
+    print(args.no_cuda)
+    if args.no_cuda == False:
+        inference_input = torch.randn(1, num_features).cpu()
+    else:
+        inference_input = torch.randn(1, num_features).cuda()
     onnx_file = os.path.join(log_dir, "lu.onnx")
     torch.onnx.export(torch_model, inference_input, onnx_file)
 

@@ -12,8 +12,24 @@ from sklearn.feature_selection import *
 import numpy as np
 import os
 import re
+import torch
 import tensorflow as tf
 
+# macro define
+MODEL_NAME      = "modelname"
+FEATURES        = "features"
+OUTPUTS         = "outputs"
+SIGNATURE       = "signature"
+MODEL_DIRECTORY = "modeldirectory"
+MODEL_FILE_NAME = "modelfilename"
+OUTPUT_KEY      = "outputkey"
+MODEL_INFERENCE = "modelinference"
+LOADMODEL_TYPE  = "loadmodeltype"
+FEATURE_PAIR    = "featurepair"
+OUTPUT_LIST     = "outputlist"
+IMPORTED        = "imported"
+INFER           = "infer"
+CLASSES_DICT    = "classesdict"
 
 # Control ACPO log messages
 #   0 = all messages are printed to stdout (defualt)
@@ -56,10 +72,21 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 field_name_set = {
     "modelname", "features", "outputs", "signature", "modeldirectory",
-    "outputkey", "modelinference"
+    "modelfilename", "outputkey", "modelinference", "loadmodeltype"
 }
 
-def get_imported_and_infer(model_dir, signature):
+
+def get_torch_imported_and_infer(model_dir, model_file_name):
+  """
+  Return the imported model and using the
+  given model_dir
+  """
+  model_path = os.path.join(os.path.dirname(__file__), model_dir)
+  imported = torch.jit.load(model_path + model_file_name)
+  return (imported, imported)
+
+
+def get_tensorflow_imported_and_infer(model_dir, signature):
   """
   Return the imported model and infer function using the
   given model_dir and signature
@@ -69,7 +96,7 @@ def get_imported_and_infer(model_dir, signature):
   infer = imported.signatures[signature]
   return (imported, infer)
 
-
+  
 def get_field_name(line):
   return line.split('=')[0].strip()
 
@@ -103,7 +130,7 @@ def load_model(model_spec_file):
   lines = f.readlines()
   model_info_dict = {}
   for line in lines:
-    if (line.strip() == ""):
+    if (line.strip() == "" or line.startswith('#')):
       continue
     field_name = get_field_name(line).lower()
     field_value = get_field_value(line)
@@ -114,30 +141,42 @@ def load_model(model_spec_file):
       model_info_dict[field_name] = field_value
   if (set(model_info_dict.keys()) != field_name_set):
     return ()
-  feature_pair = re.findall('\{[^\}]*\}', model_info_dict.get('features'))
+  feature_pair = re.findall('\{[^\}]*\}', model_info_dict.get(FEATURES))
   feature_pair = list(
       map(lambda s: tuple(re.findall('[\-A-Za-z\_0-9]+[^,|^\{|^\}]', s)),
           feature_pair))
   feature_list = list(map(lambda l: l[0], feature_pair))
-  output_pair = re.findall('\{[^\}]*\}', model_info_dict.get('outputs'))
+  output_pair = re.findall('\{[^\}]*\}', model_info_dict.get(OUTPUTS))
   output_list = list(
       map(lambda s: tuple(re.findall('[\-A-Za-z\_0-9]+[^,|^\{|^\}]', s)),
           output_pair))
   output_str_list = list(map(lambda s: s[0] + ' ' + s[1], output_list))
 
-  model_info_dict['featurepair'] = feature_pair
-  model_info_dict['outputlist'] = output_list
-  model_dir = model_info_dict.get('modeldirectory')
-  signature = model_info_dict.get('signature')
-  imported_and_infer = get_imported_and_infer(model_dir, signature)
-  imported = imported_and_infer[0]
-  infer = imported_and_infer[1]
-  model_info_dict['imported'] = imported
-  model_info_dict['infer'] = infer
+  model_info_dict[FEATURE_PAIR] = feature_pair
+  model_info_dict[OUTPUT_LIST] = output_list
+  model_dir = model_info_dict.get(MODEL_DIRECTORY)
+  model_file_name = model_info_dict.get(MODEL_FILE_NAME)
+  signature = model_info_dict.get(SIGNATURE)
+
+  load_model_type = model_info_dict.get(LOADMODEL_TYPE)
+  if (load_model_type == "torch"):
+    imported_and_infer = get_torch_imported_and_infer(model_dir, model_file_name)
+    imported = imported_and_infer[0]
+    infer = imported_and_infer[1]
+  elif (load_model_type == "tensorflow"):
+    imported_and_infer = get_tensorflow_imported_and_infer(model_dir, signature)
+    imported = imported_and_infer[0]
+    infer = imported_and_infer[1]
+  else:
+    print("unsupport model type, only support torch and tensorflow")
+    return ()
+
+  model_info_dict[IMPORTED] = imported
+  model_info_dict[INFER] = infer
   # TODO: use a pickle object to load into the classes_dict automatically (later)
   # v4.6 classes (7 UP.Counts only, no more UP.Type prediction)
   if "lu" in model_spec_file:
-    model_info_dict['classesdict'] = {
+    model_info_dict[CLASSES_DICT] = {
         0: (0, 3),
         1: (2, 3),
         2: (4, 3),
@@ -146,19 +185,20 @@ def load_model(model_spec_file):
         5: (32, 3),
         6: (64, 3)
     }
-  model_info_str = model_info_dict.get('modelname') + "," +\
+  model_info_str = model_info_dict.get(MODEL_NAME) + "," +\
     str(len(feature_list)) + "," + ",".join(feature_list) + "," +\
     str(len(output_list)) + "," + ",".join(output_str_list) + "," +\
-    model_info_dict.get('signature')
+    model_info_dict.get(SIGNATURE)
+
   return (model_info_dict, model_info_str)
 
 
 def create_MLInference(model_inference, model_dir, infer, output_key, classes_dict,
-                       output_name):
+                       output_name, loadmodeltype):
 
   if "FIInference" in model_inference:
     from FIInference import FIInference
-    return FIInference(model_dir, infer, output_key, classes_dict, output_name)
+    return FIInference(model_dir, infer, output_key, classes_dict, output_name, loadmodeltype)
   elif "LUInference" in model_inference:
     from LUInference import LUInference
     return LUInference(model_dir, infer, output_key, classes_dict, output_name)
@@ -169,13 +209,20 @@ def create_MLInference(model_inference, model_dir, infer, output_key, classes_di
 
 class MLInference(ABC):
 
-  def __init__(self, model_dir, infer, output_key, classes_dict, output_names):
+  def __init__(self, model_dir, infer, output_key, classes_dict, output_names, loadmodeltype):
     self.model_dir = model_dir
     self.infer = infer
     self.output_key = output_key
     self.classes_dict = classes_dict
     self.output_names = output_names
     self.features = []
+    self.loadmodeltype = loadmodeltype
+
+  def set_load_model_type(self):
+    self.loadmodeltype = loadmodeltype
+
+  def get_load_model_type(self):
+    return self.loadmodeltype
 
   def runInfer(self):
     return self.inference()
