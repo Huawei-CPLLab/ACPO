@@ -17,8 +17,7 @@ try:
   import warnings
   warnings.simplefilter("ignore", UserWarning)
 
-  from MLInference import create_MLInference, get_model_name, load_model, \
-      ACPO_LOG
+  from MLInference import *
 except Exception as e:
   ACPO_LOG(str(e))
   module_imported = False
@@ -28,7 +27,7 @@ class Model:
 
   def __init__(self, num_features, num_outputs, model_inference, feature_pair,
                output_list, signature, model_dir, imported, infer, output_key,
-               classes_dict):
+               classes_dict, loadmodeltype):
     self.num_features = num_features
     self.num_outputs = num_outputs
     self.model_inference = model_inference
@@ -40,6 +39,7 @@ class Model:
     self.infer = infer
     self.output_key = output_key
     self.classes_dict = classes_dict
+    self.loadmodeltype = loadmodeltype
 
 
 def create_named_pipe(name):
@@ -47,7 +47,6 @@ def create_named_pipe(name):
     return 0
   os.mkfifo(name)
   return 1
-
 
 def MLFSM(cmd_pipe, resp_pipe):
   """
@@ -90,24 +89,25 @@ def MLFSM(cmd_pipe, resp_pipe):
               sys.exit(1)
             else:
               model_info_dict = load_result[0]
-              num_features = len(model_info_dict.get('featurepair'))
-              num_outputs = len(model_info_dict.get('outputlist'))
+              num_features = len(model_info_dict.get(FEATURE_PAIR))
+              num_outputs = len(model_info_dict.get(OUTPUT_LIST))
               new_model = Model(num_features, num_outputs,
-                                model_info_dict.get('modelinference'),
-                                model_info_dict.get('featurepair'),
-                                model_info_dict.get('outputlist'),
-                                model_info_dict.get('signature'),
-                                model_info_dict.get('modeldirectory'),
-                                model_info_dict.get('imported'),
-                                model_info_dict.get('infer'),
-                                model_info_dict.get('outputkey'),
-                                model_info_dict.get('classesdict'))
+                                model_info_dict.get(MODEL_INFERENCE),
+                                model_info_dict.get(FEATURE_PAIR),
+                                model_info_dict.get(OUTPUT_LIST),
+                                model_info_dict.get(SIGNATURE),
+                                model_info_dict.get(MODEL_DIRECTORY),
+                                model_info_dict.get(IMPORTED),
+                                model_info_dict.get(INFER),
+                                model_info_dict.get(OUTPUT_KEY),
+                                model_info_dict.get(CLASSES_DICT),
+                                model_info_dict.get(LOADMODEL_TYPE))
               model_dict[model_name] = new_model
               inference_dict[model_name] = create_MLInference(
                   new_model.model_inference, new_model.model_dir,
                   new_model.infer, new_model.output_key,
                   new_model.classes_dict,
-                  list(map(lambda o: o[0], new_model.output_list)))
+                  list(map(lambda o: o[0], new_model.output_list)), new_model.loadmodeltype)
               responses.write("Model loaded," + load_result[1] + "\n")
 
           except:

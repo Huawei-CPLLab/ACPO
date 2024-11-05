@@ -12,17 +12,15 @@ import numpy as np
 import os
 import pandas as pd
 import pickle as pk
+import torch
 import tensorflow as tf
 
 
-fi_path = os.path.join(os.path.dirname(__file__), './models/pfi.pb')
-frozen_model = fi_path
-model_dir = fi_path
 class FIInference(MLInference):
 
   def prepare_features(self):
     df = pd.DataFrame(self.features)
-    pkl_file = os.path.join(os.path.dirname(__file__), model_dir, "sc.pkl")
+    pkl_file = os.path.join(os.path.dirname(__file__), self.model_dir, "sc.pkl")
     sc = pk.load(open(pkl_file, "rb"))
     df = sc.transform(df.transpose())
     input = np.array(df, dtype=np.float32)
@@ -48,9 +46,17 @@ class FIInference(MLInference):
 
     input = self.prepare_features()
 
-    output = self.infer(tf.constant(input))
+    load_model_type = self.get_load_model_type()
+    if load_model_type == "torch":
+      with torch.no_grad():
+        output = self.infer(torch.from_numpy(input))
+    elif load_model_type == "tensorflow":
+      output = self.infer(tf.constant(input))
+      output = output.get(self.output_key)
+    else :
+      print("unsupport model type, only support torch and tensorflow")
+      return {}
 
-    output = output.get(self.output_key)
     if (output is None):
       return {}
     output = output.numpy()

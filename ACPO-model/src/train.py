@@ -328,10 +328,13 @@ def learn(args, train_data_path:str, test_data_path:str, log_dir:str, train_kwar
                 best_epoch = test_epoch_accuracy
 
                 if args.save_model:
-                    torch.save(model.state_dict(), os.path.join(log_dir, "plu.pt"))
-                    # bypass save_bp
-                    # save_pb(model, log_dir, num_features)
-                    save_pb_tmp_fuc(model, log_dir, num_features)
+                    print("Start saving models")
+                    if args.save_model_type == 'torch':
+                        scrip_model = torch.jit.script(model)
+                        scrip_model.save(os.path.join(log_dir, args.model["model_file"]))
+                    elif args.save_model_type == 'tensorflow':
+                        torch.save(model.state_dict(), os.path.join(log_dir, "plu.pt"))
+                        save_pb(args, model, log_dir, num_features)
 
             test_metrics["test_classification"] = best_epoch
 

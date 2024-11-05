@@ -42,6 +42,8 @@ parser.add_argument('--build-data', action='store_true', default=False,
                     help="If we want to use the current data in work directory.")
 parser.add_argument('--save-model', action='store_true', default=False,
                     help='For Saving the current Model')
+parser.add_argument('--save-model-type', choices=['torch', 'tensorflow'], default='torch',
+                    help='The type for model save')
 
 parser.add_argument('--prune-key', type=str, default=None, 
                     help="The key/feature we use to prune data.")
