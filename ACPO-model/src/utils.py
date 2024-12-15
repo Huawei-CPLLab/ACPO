@@ -12,8 +12,9 @@ plt.rcParams['agg.path.chunksize'] = 10000
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=FutureWarning)
     '''
-    tensorflow stopped addon support a while ago,we are finding solution now
-    model save is not avaliable temporary
+    tensorflow stopped addon support a while ago
+    if you want use tf model please use X86 + GPU env
+    one support tensorflow version is tensorflow=2.2.0
     '''
 #    import onnx
 #    import onnx_tf.backend
@@ -106,13 +107,14 @@ def plotgrad(grad, log_dir, name="training-gradplot"):
 
 def save_pb(args, torch_model, log_dir, num_features):
     # Export the trained model to ONNX
-    print(args.no_cuda)
+    input_name = 'input_1'
+    output_name = 'output_0'
     if args.no_cuda == False:
-        inference_input = torch.randn(1, num_features).cpu()
-    else:
         inference_input = torch.randn(1, num_features).cuda()
+    else:
+        inference_input = torch.randn(1, num_features).cpu()
     onnx_file = os.path.join(log_dir, "lu.onnx")
-    torch.onnx.export(torch_model, inference_input, onnx_file)
+    torch.onnx.export(torch_model, inference_input, onnx_file, input_names = [input_name], output_names = [output_name])
 
     # Import the ONNX model to Tensorflow
     onnx_model = onnx.load(onnx_file)
