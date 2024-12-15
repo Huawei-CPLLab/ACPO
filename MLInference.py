@@ -261,6 +261,7 @@ class MLInference(ABC):
     for x in range(len(sent_features)):
       self.features.append(0)
     self.set_features(sent_features)
+    self.features = [value[1] for value in sent_features]
 
 if __name__ == "__main__":
   inference()

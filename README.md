@@ -28,3 +28,26 @@ framework better, faster and and larger in scope. This include providing models 
 projects, for us specifically related to LLVM-based infrastructure, provide feature collection methods and interfaces to leverage ACPO in an easy-to-use way.
 
 Feel free to reach out to us and contribute to help us make data-driven compilers with AI/ML capabilities.
+
+# AOP override
+
+Support compiler version: llvm dev_17.0.6, please clone from gitee:https://gitee.com/openeuler/llvm-project branch dev_17.0.6
+
+1. Use cmd --save-model-type tensorflow when tarin ACPO model.
+2. Use tensorflow (version > 2.10) to pre-compile tf model.
+    CMD eg:
+    saved_model_cli aot_compile_cpu --multithreading false --dir MODEL_DIR --tag_set serve --signature_def_key serving_default --output_prefix FICompiledModel --cpp_class llvm::FICompiledModel
+3. Copy .h and .o file to the DIR=ACPO/override and confirm your machine type.
+    eg:
+    FICompiledModel-AARCH64.h FICompiledModel-AARCH64.o
+    compiler buile type must same as pre-compile model typs.All x86-64 or all AARCH-64.
+    use uname -m to see your type.
+4. Use overrides/utils/DumpScalerInfo.py to print your scale value form sc.pkl, and replace them in                 
+   LLVM_DIR\llvm\include\llvm\Analysis\FIModelRunner.h
+   note:
+   mv your sc.pkl to overrides/utils and use CMD:python DumpScalerInfo.py to generate.
+5. Before you recompile compiler, must:
+   set acpo_aot=1, override_aot=1 in build.sh.
+   export OPENEULER_ACPO_DIR = "YOUR_ACPO_DIR"
+   export TENSORFLOW_AOT_PATH = "PYTHON_DIR/site-packages/" (tensorflow must in dir, if not please pip install)
+6. Recompile compiler and AOT will be overrided.
